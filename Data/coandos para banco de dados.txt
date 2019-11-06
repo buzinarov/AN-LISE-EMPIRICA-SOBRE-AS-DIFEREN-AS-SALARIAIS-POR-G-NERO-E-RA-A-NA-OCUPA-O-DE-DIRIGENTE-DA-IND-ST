@@ -1,0 +1,163 @@
+set more off
+
+*norte=1 diferente=0
+gen norte= (UF==11 | UF==12 | UF==13 | UF==14 | UF==16 | UF==17)
+
+*nordeste=1 diferente=0
+gen nordeste= (UF==21 | UF==22 | UF==23 | UF==24 | UF==25 | UF==26 | UF==27 | UF==28 | UF==29)
+
+*suldeste=1 diferente=0
+gen suldeste= (UF==31 | UF==32 | UF==33 | UF==35) 
+
+*sul=1 diferente=0
+gen sul= (UF==41 | UF==42 | UF==43)
+
+*centro oeste=1 diferente=0
+gen oeste= (UF==50 | UF==51 | UF==52)
+
+*DF=1 diferente=0
+gen DF= (UF==35) 
+
+*****************************************
+
+*mulher=1 ; homem=0
+gen  Mulher=1 if  V0302==4
+replace Mulher=0 if V0302==2
+
+*Homem=1 ; mulher=0
+gen  homem=1 if  V0302==2
+replace homem=0 if V0302==4
+
+************************************** Gerar variável idade
+gen idade=V8005
+
+
+**gerar nao determinados por missing
+replace V4803=. if V4803==17
+
+****** gerar anos de estudos correto
+gen anosdeestudo = V4803-1
+
+******gerar salario hora
+*limpar sem declaração
+replace V4718=. if V4718==999999999999
+
+****gerar horas trabalhadas no mês
+gen horames= V9058*4
+
+****gerar salário hora
+gen salhora=V4718/horames
+
+****gerar variável "ln" do salário hora
+gen lnsal= ln(salhora)
+
+*************************************************************************************************
+
+**** gerar variável experiência  e experiência ²
+*idade - idade que começou a trabalhar
+gen exp= V8005-V9892
+
+gen exp2= exp*exp
+
+*** obs. outra proxy é exp = idade - anos de estudos - 6
+
+***** gerar ocupação
+*excluir ocupações das forças armadas e mal definidas
+drop if V4810==09 | V4810==10
+
+*gerar ocupações 
+gen dirigente=(V4810==01)
+replace dirigente=. if V4810==.
+gen pca=(V4810==02)
+replace pca=. if V4810==.
+gen tecmedio=(V4810==03)
+replace tecmedio=. if V4810==.
+gen operacional =(V4810==04 | V4810==05 | V4810==06 | V4810==07 | V4810==08)
+replace operacional=. if V4810==.
+
+** binária urbano
+*urbano=1, rurual=0
+gen urbano= (V4728<=3)
+
+***** gerar variável formalidade/informalidade
+* excluir próprio consumo, uso e não remunerados
+drop if V4706==11 | V4706==12 | V4706==13
+
+* gerar formal=1, informal=0 (para fins didáticos consuderou empregador como formal e conta própria informal)
+gen formal=(V4706==1 | V4706==02 | V4706==03 | V4706==06 | V4706==10)
+replace formal=. if V4706==.
+
+******* gerar variável binária setores
+*excluir outras atividade e atividades mal definidas
+replace V4809=. if V4809==13 | V4809==12
+
+* agricultura=1, diferente=0
+gen agricultura= (V4809==01)
+replace agricultura=. if V4809==.
+
+*industrial=1, diferente=0
+gen industria= (V4809==02 | V4809==03 | V4809==04)
+replace industria=. if V4809==.
+
+*comercio=1, diferente=0
+gen comercio= (V4809==05)
+replace comercio=. if V4809==.
+
+*serviços=1, diferente=0
+gen servicos= (V4809==06 | V4809==07 | V4809==08 | V4809==09 | V4809==10 | V4809==11) 
+replace servicos=. if V4809==.
+
+*Gerar setor econômico
+gen setor=1 if agricultura==1
+replace setor=2 if comercio==1
+replace setor=3 if servicos==1
+replace setor=4 if industria==1
+
+-------------------------------------------------------------------------------------------------------------------------
+
+
+reg  lnsal  anosdeestudo exp exp2 homem formal if  idade>=14  & industria==1 & dirigente==1
+
+table homem if  idade>=14  & industria==1, contents (mean  salhora)
+
+reg  lnsal  anosdeestudo exp exp2 homem formal if  idade>=14 & suldeste==1 & industria==1 & dirigente==1
+
+reg  lnsal  anosdeestudo exp exp2 homem if  idade>=14 & suldeste==1 & industria==1 & dirigente==1
+
+
+---------------------------------------------------------------------------------------------------------------------------
+
+gen branco=1 if  V0404==2
+replace branco=0 if V0404==4 | V0404==8
+
+reg  lnsal  anosdeestudo exp exp2 homem formal branco  if  idade>=14  & industria==1 & dirigente==1
+
+ovtest
+
+tab formal if  idade>=14  & industria==1 & dirigente==1
+
+reg  lnsal  anosdeestudo exp exp2 homem formal branco  if  idade>=14  & industria==1 & dirigente==1
+
+reg  lnsal  anosdeestudo exp exp2 homem formal branco [aw=V4729] if  idade>=14  & industria==1 & dirigente==1
+
+vif
+
+hettest
+
+reg  lnsal  anosdeestudo exp exp2 homem formal branco if  idade>=14  & industria==1 & dirigente==1
+
+imtest, white
+
+log using "C:\Users\raoni\Desktop\economietria\Dados\Untitled.smcl"
+
+reg  lnsal  anosdeestudo exp exp2 homem formal branco [aw=V4729] if  idade>=14  & industria==1 & dirigente==1
+
+vif
+
+hettest
+
+estat ovtest
+
+log close
+
+-------------------------------------------------------------------------------------------------------------------------------------

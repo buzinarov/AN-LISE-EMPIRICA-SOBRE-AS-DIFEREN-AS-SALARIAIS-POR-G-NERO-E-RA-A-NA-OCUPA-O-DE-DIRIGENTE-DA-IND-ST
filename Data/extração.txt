@@ -1,0 +1,24 @@
+Rotina de Extração:
+
+dictionary using "C:\Users\raoni\Desktop\Dados\PES2013.txt"
+{
+_column(00005)float UF %2g "Unidade de Federação"
+_column(00018)float V0302 %1g "Sexo"
+_column(00027)float V8005 %3g "Idade do Morador"
+_column(00033)float V0404 %1g "Cor"
+_column(00669)float V4803 %2g "Anos de estudo"
+_column(00691)double V4718 %12g "Rendimentos"
+_column(00408)float V9892 %2g "idade que começa a atrab"
+_column(00031)float V0402 %2g "Condição da família"
+_column(00757)double V4729 %5g "Peso da pessoa"
+_column(00673)float V4706 %2g "Posição ocupação"
+_column(00671)float V4704 %1g "Cond. na semana de ref. 10"
+_column(00756)float V4728 %1g "Urbano n urbano"
+_column(00360)float V9058 %2g "Horas de trab. Sem Ref"
+_column(00679)float V4810 %2g "agrupamento ocupacional Ref"
+_column(00681)float V4711 %1g "Previdência"
+_column(00672)float V4805 %1g "Condição da acupação Ref"
+_column(00677)float V4809 %2g "Setor"
+}
+
+
